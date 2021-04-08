@@ -17,10 +17,31 @@
 #include<arpa/inet.h>
 #include<sys/ioctl.h>
 #include <sys/time.h>
+#include <pthread.h>
 #define BUFFSIZE 1024
 #define ERRORCODE -1
 struct timeval tv;
 
+pthread_mutex_t clients_mutex = PTHREAD_MUTEX_INITIALIZER;
+char* getTimeNow(char *buff_out,char *buf){
+	gettimeofday(&tv,NULL);
+    char time_now[128];
+    sprintf(time_now,"%ld",tv.tv_sec*1000000 + tv.tv_usec);
+	buff_out[0] = '\0';
+
+    strcat(buff_out,buf);
+    strcat(buff_out,time_now);
+    strcat(buff_out," <-收时间戳(微秒) ");
+	return buff_out;
+}
+/* Send message to client */
+void send_message_client(char *s, int connfd){
+    pthread_mutex_lock(&clients_mutex);
+    if (write(connfd, s, strlen(s))<0) {
+        	perror("Write to descriptor failed");
+    }
+    pthread_mutex_unlock(&clients_mutex);
+}
 static void *thread_send(void *arg)
 {
 	char buf[BUFFSIZE];
@@ -30,16 +51,10 @@ static void *thread_send(void *arg)
 	{
 		memset(buf, 0, sizeof(buf));
 		read(STDIN_FILENO, buf, sizeof(buf));
-        gettimeofday(&tv,NULL);
-        char time_now[128];
-        sprintf(time_now,"%ld",tv.tv_sec*1000000 + tv.tv_usec);
+        
         buff_out[0] = '\0';
 
-        strcat(buff_out,buf);
-        buff_out[strlen(buff_out)-1]=0;
-        strcat(buff_out,"发时间戳(微秒)->");
-        strcat(buff_out,time_now);
-		if (send(sd, buff_out, strlen(buff_out), 0) == -1)
+		if (send(sd, buf, strlen(buf), 0) == -1)
 		{
 			printf("send error:%s \n", strerror(errno));
 			break;
@@ -47,6 +62,7 @@ static void *thread_send(void *arg)
     }
 	return NULL;
 }
+
 static void *thread_recv(void *arg)
 {
 	char buf[BUFFSIZE];
@@ -66,18 +82,26 @@ static void *thread_recv(void *arg)
 		printf("recv error:%s \n", strerror(errno));
 		break;
 		}
-		gettimeofday(&tv,NULL);
-        char time_now[128];
-        sprintf(time_now,"%ld",tv.tv_sec*1000000 + tv.tv_usec);
-        buff_out[0] = '\0';
+		// gettimeofday(&tv,NULL);
+        // char time_now[128];
+        // sprintf(time_now,"%ld",tv.tv_sec*1000000 + tv.tv_usec);
+        // buff_out[0] = '\0';
 
-        strcat(buff_out,buf);
-        strcat(buff_out,time_now);
-        strcat(buff_out,"<-收时间戳(微秒)");
-        printf("%s", buff_out);//输出接收到的内容
+        // strcat(buff_out,buf);
+        // strcat(buff_out,time_now);
+        // strcat(buff_out," <-收时间戳(微秒) ");
+		
+        // printf("%s", buff_out);//输出接收到的内容
+		printf("%s",getTimeNow(buff_out,buf));//输出接收到的内容
+		
 	}	
 	return NULL;
 }
+
+
+
+
+
 int run_client(char *ip_str, int port)
 {
 	int client_sd;
