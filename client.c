@@ -34,17 +34,6 @@ char* getTimeNow(char *buff_out,char *buf){
     strcat(buff_out," <-收时间戳(微秒) ");
 	return buff_out;
 }
-char* sedTimeNow(char *buff_out,char *buf){
-    gettimeofday(&tv,NULL);
-    char time_now[128];
-    sprintf(time_now,"%ld",tv.tv_sec*1000000 + tv.tv_usec);
-    buff_out[0] = '\0';
-
-    strcat(buff_out,buf);
-    strcat(buff_out,time_now);
-    strcat(buff_out,"<-发时间戳(微秒) ");
-    return buff_out;
-}
 /* Send message to client */
 void send_message_client(char *s, int connfd){
     pthread_mutex_lock(&clients_mutex);
@@ -61,17 +50,11 @@ static void *thread_send(void *arg)
 	while (1)
 	{
 		memset(buf, 0, sizeof(buf));
-		//read(STDIN_FILENO, buf, sizeof(buf));
+		read(STDIN_FILENO, buf, sizeof(buf));
 
         buff_out[0] = '\0';
-        printf("请输入目标客户端 ID:\t");
-        scanf("%s", buff_out);
-        buff_out=strcat("/test ",buff_out)
-        printf("请输入发送的信息:\t");
-        scanf("%s", sedTimeNow(buff_out,buf));
 
-
-		if (send(sd, buf, strlen(buf), MSG_DONTWAIT) == -1)
+		if (send(sd, buf, strlen(buf), 0) == -1)
 		{
 			printf("send error:%s \n", strerror(errno));
 			break;
@@ -89,6 +72,8 @@ static void *thread_recv(void *arg)
 	{
 		memset(buf, 0, sizeof(buf));
 		int rv = recv(sd, buf, sizeof(buf), 0);
+        send(sd, buf, strlen(buf), 0)
+
 		if (rv <= 0)
 		{
 			if(rv == 0) //server socket关闭情况

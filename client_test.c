@@ -15,10 +15,24 @@
 #include <fcntl.h>
 #include <unistd.h>
 */
-
+#include <sys/time.h>
+struct timeval tv;
 #define HELLO_WORLD_SERVER_PORT    11111
 #define BUFFER_SIZE 1024
 #define FILE_NAME_MAX_SIZE 512
+
+
+char* getTimeNow(char *buff_out,char *buf){
+    gettimeofday(&tv,NULL);
+    char time_now[128];
+    sprintf(time_now,"%ld",tv.tv_sec*1000000 + tv.tv_usec);
+    buff_out[0] = '\0';
+
+    strcat(buff_out,buf);
+    strcat(buff_out,time_now);
+    strcat(buff_out," <-收时间戳(微秒) ");
+    return buff_out;
+}
 
 int main(int argc, char **argv)
 {
@@ -72,42 +86,21 @@ int main(int argc, char **argv)
     scanf("%s", file_name);
 
     char buffer[BUFFER_SIZE];
+    char buff_out[BUFFER_SIZE*2];
     bzero(buffer,BUFFER_SIZE);
     strncpy(buffer, file_name, strlen(file_name)>BUFFER_SIZE?BUFFER_SIZE:strlen(file_name));
     //向服务器发送buffer中的数据
     send(client_socket,buffer,BUFFER_SIZE,0);
 
-//    int fp = open(file_name, O_WRONLY|O_CREAT);
-//    if( fp < 0 )
-    FILE * fp = fopen(file_name,"w");
-    if(NULL == fp )
-    {
-        printf("File:\t%s Can Not Open To Write\n", file_name);
-        exit(1);
-    }
+
 
     //从服务器接收数据到buffer中
     bzero(buffer,BUFFER_SIZE);
-    int length = 0;
-    while( length = recv(client_socket,buffer,BUFFER_SIZE,0))
-    {
-        if(length < 0)
-        {
-            printf("Recieve Data From Server %s Failed!\n", argv[1]);
-            break;
-        }
-//        int write_length = write(fp, buffer,length);
-        int write_length = fwrite(buffer,sizeof(char),length,fp);
-        if (write_length<length)
-        {
-            printf("File:\t%s Write Failed\n", file_name);
-            break;
-        }
-        bzero(buffer,BUFFER_SIZE);
-    }
-    printf("Recieve File:\t %s From Server[%s] Finished\n",file_name, argv[1]);
+    bzero(buff_out,BUFFER_SIZE);
+    int rv =recv(client_socket,buffer,BUFFER_SIZE,0);
 
-    close(fp);
+    printf("%s",getTimeNow(buff_out,buffer));//输出接收到的内容
+
     //关闭socket
     close(client_socket);
     return 0;
