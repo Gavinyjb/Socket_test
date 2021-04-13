@@ -381,6 +381,7 @@ int run_server(int port, char *interName){
         return -1;
     }
 
+
     serv_addr.sin_family = AF_INET; //设置结构类型为TCP/IP
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY); //服务端是等待别人来连，不需要找谁的ip
     //这里写一个长量INADDR_ANY表示server上所有ip，这个一个server可能有多个ip地址，因为可能有多块网卡

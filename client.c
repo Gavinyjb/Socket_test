@@ -54,7 +54,7 @@ static void *thread_send(void *arg)
         
         buff_out[0] = '\0';
 
-		if (send(sd, buf, strlen(buf), 0) == -1)
+		if (send(sd, buf, strlen(buf), MSG_DONTWAIT) == -1)
 		{
 			printf("send error:%s \n", strerror(errno));
 			break;
@@ -71,7 +71,7 @@ static void *thread_recv(void *arg)
 	while (1)
 	{
 		memset(buf, 0, sizeof(buf));
-		int rv = recv(sd, buf, sizeof(buf), 0);
+		int rv = recv(sd, buf, sizeof(buf), MSG_DONTWAIT);
 		if (rv <= 0)
 		{
 			if(rv == 0) //server socket关闭情况
