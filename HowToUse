@@ -1,2 +1,0 @@
-//关于编译
-gcc -o client client.c -w -lpthread 

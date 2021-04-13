@@ -72,7 +72,7 @@ static void *thread_recv(void *arg)
 	{
 		memset(buf, 0, sizeof(buf));
 		int rv = recv(sd, buf, sizeof(buf), 0);
-        send(sd, buf, strlen(buf), 0)
+		send(sd, buf, strlen(buf), 0);
 
 		if (rv <= 0)
 		{
