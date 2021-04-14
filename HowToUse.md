@@ -10,6 +10,9 @@ gcc -o client client.c -w -lpthread
 
 被用来测试a客户端经由B服务端到达C客户端的时间
 
+### //chat_server-v3 编译自chat_server-v3.c
+
+被用来测试A服务端到达C客户端的时间
 ### //绕经测试
 
 #### 1.查看服务器B网络信息 
