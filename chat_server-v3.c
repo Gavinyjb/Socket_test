@@ -329,7 +329,7 @@ void *handle_client(void *arg){
         } else {
             /* Send message */
             snprintf(buff_out, sizeof(buff_out), "%s\r\n",buff_in);
-            send_message_self(buff_out, cli->uid);
+            send_message_all(buff_out);
         }
     }
 
